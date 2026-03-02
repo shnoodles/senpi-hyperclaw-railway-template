@@ -98,11 +98,19 @@ Then respond with: `NO_REPLY`
 
 ## Step 3 — Check Senpi state (silent)
 
-- **State file path:** `$SENPI_STATE_DIR/state.json` (default: `~/.config/senpi/state.json` if `SENPI_STATE_DIR` is unset).
-- Read the file directly. Use the `state` field: `READY` → skip onboarding; anything else (`FRESH`, `ONBOARDING`, `UNFUNDED`, `AWAITING_FIRST_TRADE`, `FAILED`) → proceed to step 4.
-- If the file or directory does not exist, treat state as **not READY** (do not surface an error).
-- **Do not write to or modify this file.** You only read it. State transitions are managed elsewhere.
-- **No text output.**
+**State file path:** `$SENPI_STATE_DIR/state.json` (default: `~/.config/senpi/state.json` if `SENPI_STATE_DIR` is unset).
+
+Read the file and check the `state` field:
+
+- **`state` is `"READY"`** → skip to step 5 (no onboarding needed).
+- **`state` is an explicit non-READY value** (`"FRESH"`, `"ONBOARDING"`, `"UNFUNDED"`, `"AWAITING_FIRST_TRADE"`, `"FAILED"`) → proceed to step 4.
+- **`state` is missing, null, or the file is `{}`** → the local cache is empty (e.g. fresh deploy or volume reset); this does NOT mean the user is not onboarded. **Fall back to the MCP as the source of truth:**
+  - Call the `senpi` MCP to query the user's actual account state (e.g. fetch profile or account status).
+  - If the MCP confirms the account is active / funded / ready → treat as READY, skip to step 5.
+  - If the MCP returns a state that indicates the user still needs onboarding → proceed to step 4.
+  - If the MCP call fails → treat as not READY and proceed to step 4.
+
+**Do not write to or modify `state.json`.** You only read it. State transitions are managed by Senpi skills. **No text output.**
 
 ## Step 4 — If state is not READY
 
