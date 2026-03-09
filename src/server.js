@@ -10,6 +10,9 @@ import {
   configPath,
   isConfigured,
   SETUP_PASSWORD,
+  AI_PROVIDER,
+  AI_API_KEY,
+  PROVIDER_TO_AUTH_CHOICE,
 } from "./lib/config.js";
 import { resolveGatewayToken } from "./lib/auth.js";
 import { getGatewayProcess, restartGateway } from "./gateway.js";
@@ -99,6 +102,30 @@ const server = app.listen(PORT, () => {
     restartGateway(OPENCLAW_GATEWAY_TOKEN).catch((err) => {
       console.error(`[wrapper] Gateway startup failed: ${err}`);
     });
+  } else {
+    // Not configured and can't auto-onboard — explain why.
+    console.log("[wrapper] ================================================================");
+    console.log("[wrapper] Not configured and auto-onboard is not possible.");
+    if (!AI_PROVIDER) {
+      console.log("[wrapper]   ✗ AI_PROVIDER is not set");
+    } else if (!PROVIDER_TO_AUTH_CHOICE[AI_PROVIDER]) {
+      console.log(`[wrapper]   ✗ AI_PROVIDER="${AI_PROVIDER}" is not a recognized provider`);
+      console.log(`[wrapper]     Supported: ${Object.keys(PROVIDER_TO_AUTH_CHOICE).join(", ")}`);
+    } else {
+      console.log(`[wrapper]   ✓ AI_PROVIDER="${AI_PROVIDER}"`);
+    }
+    if (!AI_API_KEY) {
+      console.log("[wrapper]   ✗ AI_API_KEY is not set");
+    } else {
+      console.log("[wrapper]   ✓ AI_API_KEY is set");
+    }
+    if (SETUP_PASSWORD) {
+      console.log("[wrapper] → Visit /setup to configure manually");
+    } else {
+      console.log("[wrapper]   ✗ SETUP_PASSWORD is not set (/setup is disabled)");
+      console.log("[wrapper] → Set AI_PROVIDER + AI_API_KEY, or set SETUP_PASSWORD to use the setup wizard");
+    }
+    console.log("[wrapper] ================================================================");
   }
 });
 
