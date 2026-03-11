@@ -32,27 +32,28 @@ export const DESIRED_MODELS = {
   // ── OpenAI Codex (subscription/OAuth) ──
   "openai-codex/gpt-5.3-codex": { alias: "GPT-5.3 Codex" },
 
-  // ── Google Gemini (API key) ──
-  "google/gemini-3-1-pro-preview": { alias: "Gemini 3.1 Pro" },
-  "google/gemini-3-pro-preview": { alias: "Gemini 3 Pro" },
+  // ── Google Gemini ──
+  "google/gemini-3.1-pro-preview": { alias: "Gemini 3.1 Pro" },
   "google/gemini-3-flash-preview": { alias: "Gemini 3 Flash" },
+  "google/gemini-3.1-flash-lite-preview": { alias: "Gemini 3.1 Flash Lite" },
   "google/gemini-2.5-pro": { alias: "Gemini 2.5 Pro" },
   "google/gemini-2.5-flash": { alias: "Gemini 2.5 Flash" },
   "google/gemini-2.5-flash-lite": { alias: "Gemini 2.5 Flash Lite" },
+  // ── Google Gemini (Specialized) ──
   "google/gemini-2.5-flash-image": { alias: "Gemini 2.5 Flash Image" },
-  "google/gemini-2.0-flash": { alias: "Gemini 2.0 Flash" },
-  "google/gemini-2.0-flash-lite": { alias: "Gemini 2.0 Flash Lite" },
+  "google/gemini-3.1-flash-image-preview": { alias: "Gemini 3.1 Flash Image" },
+  "google/gemini-3-pro-image-preview": { alias: "Gemini 3 Pro Image" },
+  "google/gemini-2.5-flash-native-audio-preview-12-2025": { alias: "Gemini 2.5 Flash Audio" },
+  "google/gemini-2.5-flash-preview-tts": { alias: "Gemini 2.5 Flash TTS" },
+  "google/gemini-2.5-pro-preview-tts": { alias: "Gemini 2.5 Pro TTS" },
+  "google/gemini-2.5-computer-use-preview-10-2025": { alias: "Gemini 2.5 Computer Use" },
+  "google/gemini-embedding-001": { alias: "Gemini Embedding" },
+  "google/gemini-robotics-er-1.5-preview": { alias: "Gemini Robotics ER" },
+  "google/deep-research-pro-preview-12-2025": { alias: "Deep Research Pro" },
+  "google/imagen-4": { alias: "Imagen 4" },
+  "google/veo-3.1-generate-preview": { alias: "Veo 3.1" },
+  "google/lyria-realtime-exp": { alias: "Lyria Realtime" },
 
-  // ── Google Vertex AI (ADC) ──
-  "google-vertex/gemini-3-1-pro-preview": { alias: "Gemini 3.1 Pro (Vertex)" },
-  "google-vertex/gemini-3-pro-preview": { alias: "Gemini 3 Pro (Vertex)" },
-  "google-vertex/gemini-3-flash-preview": { alias: "Gemini 3 Flash (Vertex)" },
-  "google-vertex/gemini-2.5-pro": { alias: "Gemini 2.5 Pro (Vertex)" },
-  "google-vertex/gemini-2.5-flash": { alias: "Gemini 2.5 Flash (Vertex)" },
-  "google-vertex/gemini-2.5-flash-lite": { alias: "Gemini 2.5 Flash Lite (Vertex)" },
-  "google-vertex/gemini-2.5-flash-image": { alias: "Gemini 2.5 Flash Image (Vertex)" },
-  "google-vertex/gemini-2.0-flash": { alias: "Gemini 2.0 Flash (Vertex)" },
-  "google-vertex/gemini-2.0-flash-lite": { alias: "Gemini 2.0 Flash Lite (Vertex)" },
 
   // ── xAI ──
   "xai/grok-3": { alias: "Grok 3" },
@@ -137,7 +138,7 @@ export const DESIRED_MODELS = {
   "openrouter/anthropic/claude-sonnet-4-5": { alias: "Sonnet 4.5 (OpenRouter)" },
   "openrouter/openai/gpt-4.1": { alias: "GPT-4.1 (OpenRouter)" },
   "openrouter/deepseek/deepseek-chat": { alias: "DeepSeek Chat (OpenRouter)" },
-  "openrouter/google/gemini-3-1-pro-preview": { alias: "Gemini 3.1 Pro (OpenRouter)" },
+  "openrouter/google/gemini-3.1-pro-preview": { alias: "Gemini 3.1 Pro (OpenRouter)" },
   "openrouter/google/gemini-2.5-pro": { alias: "Gemini 2.5 Pro (OpenRouter)" },
 
   // ── OpenCode Zen ──
@@ -158,15 +159,14 @@ export const DESIRED_MODELS = {
 export const PROVIDER_DEFAULTS = [
   { key: "ANTHROPIC_API_KEY", model: "anthropic/claude-opus-4-6" },
   { key: "OPENAI_API_KEY", model: "openai/gpt-5.2" },
-  { key: "GEMINI_API_KEY", model: "google/gemini-3-1-pro-preview" },
-  { key: "GOOGLE_APPLICATION_CREDENTIALS", model: "google-vertex/gemini-3-1-pro-preview" },
+  { key: "GEMINI_API_KEY", model: "google/gemini-3.1-pro-preview" },
   { key: "XAI_API_KEY", model: "xai/grok-3" },
   { key: "MISTRAL_API_KEY", model: "mistral/mistral-large-latest" },
   { key: "GROQ_API_KEY", model: "groq/llama-3.3-70b" },
   { key: "TOGETHER_API_KEY", model: "together/moonshotai/Kimi-K2.5" },
   { key: "ZAI_API_KEY", model: "zai/glm-5" },
   { key: "MOONSHOT_API_KEY", model: "moonshot/kimi-k2.5" },
-  { key: "VENICE_API_KEY", model: "venice/kimi-k2-5" },
+  { key: "VENICE_API_KEY", model: "venice/llama-3.3-70b" },
   { key: "OPENROUTER_API_KEY", model: "openrouter/anthropic/claude-sonnet-4-5" },
 ];
 
@@ -177,13 +177,12 @@ export const PROVIDER_DEFAULTS = [
 export const AI_PROVIDER_MODEL_MAP = {
   anthropic: "anthropic/claude-opus-4-6",
   openai: "openai/gpt-5.2",
-  gemini: "google/gemini-3-1-pro-preview",
-  google: "google/gemini-3-1-pro-preview",
-  "google-vertex": "google-vertex/gemini-3-1-pro-preview",
+  gemini: "google/gemini-3.1-pro-preview",
+  google: "google/gemini-3.1-pro-preview",
   openrouter: "openrouter/anthropic/claude-sonnet-4-5",
   moonshot: "moonshot/kimi-k2.5",
   zai: "zai/glm-5",
-  venice: "venice/kimi-k2-5",
+  venice: "venice/llama-3.3-70b",
   mistral: "mistral/mistral-large-latest",
   minimax: "minimax/MiniMax-M2.1",
 };

@@ -52,7 +52,6 @@ export const PROVIDER_TO_AUTH_CHOICE = {
   openrouter: "openrouter-api-key",
   gemini: "gemini-api-key",
   google: "gemini-api-key",
-  "google-vertex": "google-vertex",
   "ai-gateway": "ai-gateway-api-key",
   moonshot: "moonshot-api-key",
   "kimi-code": "kimi-code-api-key",
@@ -64,9 +63,7 @@ export const PROVIDER_TO_AUTH_CHOICE = {
 };
 
 /** Providers that use ADC/OAuth instead of an API key (AI_API_KEY not required). */
-export const PROVIDERS_WITHOUT_API_KEY = new Set([
-  "google-vertex",
-]);
+export const PROVIDERS_WITHOUT_API_KEY = new Set([]);
 
 /**
  * Map AI_PROVIDER to its provider-specific env var name.
