@@ -21,8 +21,8 @@ const SENPI_TOKEN_FILE = path.join(STATE_DIR, "config", "senpi.token");
 const IMAGE_SKILLS_DIR = "/opt/openclaw-skills";
 const STATE_SKILLS_DIR = path.join(STATE_DIR, "skills");
 
-/** When OPENCLAW_STATE_DIR is set we seed plugins here; when unset we use /openclaw/extensions (bundled) only. */
-const BUNDLED_EXTENSIONS_DIR = "/openclaw/extensions";
+/** Image copy of trading-runtime; not an OpenClaw scan root — bootstrap syncs into state dir. */
+const BUNDLED_EXTENSIONS_DIR = "/opt/senpi-extensions";
 
 function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
@@ -340,14 +340,17 @@ export function bootstrapOpenClaw() {
     path.join(STATE_SKILLS_DIR, "mcporter"),
   );
 
-  // When OPENCLAW_STATE_DIR is set: seed trading-runtime from /openclaw/extensions into state dir
-  // (only if not present) so upgrades via "openclaw plugins install" update one copy. When
-  // OPENCLAW_STATE_DIR is not set we use /openclaw/extensions only (no seeding).
+  // When OPENCLAW_STATE_DIR is set: always sync trading-runtime from image into state dir so
+  // redeploys pick up new plugin versions and we never have two copies (state + bundled) with
+  // the same plugin ID after "openclaw plugins install".
   const stateExtensionsDir = path.join(STATE_DIR, "extensions");
   const tradingRuntimeBundled = path.join(BUNDLED_EXTENSIONS_DIR, "trading-runtime");
   if (process.env.OPENCLAW_STATE_DIR?.trim() && exists(tradingRuntimeBundled)) {
     ensureDir(stateExtensionsDir);
-    copyDirIfMissing(tradingRuntimeBundled, path.join(stateExtensionsDir, "trading-runtime"));
+    fs.cpSync(tradingRuntimeBundled, path.join(stateExtensionsDir, "trading-runtime"), {
+      recursive: true,
+      force: true,
+    });
   }
 
   ensureSenpiStateFile();
