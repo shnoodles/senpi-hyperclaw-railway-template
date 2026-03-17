@@ -21,7 +21,7 @@ const SENPI_TOKEN_FILE = path.join(STATE_DIR, "config", "senpi.token");
 const IMAGE_SKILLS_DIR = "/opt/openclaw-skills";
 const STATE_SKILLS_DIR = path.join(STATE_DIR, "skills");
 
-/** Image copy of trading-runtime; not an OpenClaw scan root — bootstrap syncs into state dir. */
+/** Image copy of trading-recipe; not an OpenClaw scan root — bootstrap syncs into state dir. */
 const BUNDLED_EXTENSIONS_DIR = "/opt/senpi-extensions";
 
 function ensureDir(p) {
@@ -146,9 +146,9 @@ function patchOpenClawJson() {
     plugins: {
       entries: (() => {
         const entries = { telegram: { enabled: true } };
-        // Only add trading-runtime if enabled (set SENPI_TRADING_RUNTIME_ENABLED=false to omit when plugin is not in image)
+        // Only add trading-recipe if enabled (set SENPI_TRADING_RUNTIME_ENABLED=false to omit when plugin is not in image)
         if (process.env.SENPI_TRADING_RUNTIME_ENABLED !== "false") {
-          entries["trading-runtime"] = {
+          entries["trading-recipe"] = {
             enabled: true,
             config: {
               stateDir: path.join(STATE_DIR, "senpi-state"),
@@ -183,9 +183,9 @@ function patchOpenClawJson() {
     if (!paths.includes(stateExt)) merged.plugins.load.paths = [...paths, stateExt];
   }
 
-  // If trading-runtime is disabled, remove it so config stays valid when plugin is not in image
+  // If trading-recipe is disabled, remove it so config stays valid when plugin is not in image
   if (process.env.SENPI_TRADING_RUNTIME_ENABLED === "false" && merged.plugins?.entries) {
-    delete merged.plugins.entries["trading-runtime"];
+    delete merged.plugins.entries["trading-recipe"];
   }
 
   merged.agents = merged.agents || {};
@@ -221,7 +221,7 @@ function patchOpenClawJson() {
   }
   fs.writeFileSync(cfgPath, JSON.stringify(merged, null, 2));
   if (process.env.SENPI_TRADING_RUNTIME_ENABLED !== "false") {
-    console.log("[bootstrap] trading-runtime plugin configured (stateDir:", path.join(STATE_DIR, "senpi-state"), ")");
+    console.log("[bootstrap] trading-recipe plugin configured (stateDir:", path.join(STATE_DIR, "senpi-state"), ")");
   }
 }
 
@@ -340,14 +340,14 @@ export function bootstrapOpenClaw() {
     path.join(STATE_SKILLS_DIR, "mcporter"),
   );
 
-  // When OPENCLAW_STATE_DIR is set: always sync trading-runtime from image into state dir so
+  // When OPENCLAW_STATE_DIR is set: always sync trading-recipe from image into state dir so
   // redeploys pick up new plugin versions and we never have two copies (state + bundled) with
   // the same plugin ID after "openclaw plugins install".
   const stateExtensionsDir = path.join(STATE_DIR, "extensions");
-  const tradingRuntimeBundled = path.join(BUNDLED_EXTENSIONS_DIR, "trading-runtime");
-  if (process.env.OPENCLAW_STATE_DIR?.trim() && exists(tradingRuntimeBundled)) {
+  const tradingRecipeBundled = path.join(BUNDLED_EXTENSIONS_DIR, "trading-recipe");
+  if (process.env.OPENCLAW_STATE_DIR?.trim() && exists(tradingRecipeBundled)) {
     ensureDir(stateExtensionsDir);
-    fs.cpSync(tradingRuntimeBundled, path.join(stateExtensionsDir, "trading-runtime"), {
+    fs.cpSync(tradingRecipeBundled, path.join(stateExtensionsDir, "trading-recipe"), {
       recursive: true,
       force: true,
     });
