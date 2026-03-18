@@ -85,7 +85,7 @@ const DEFAULT_AGENTS_LIST = [
     id: "main",
     tools: {
       profile: "full",
-      allow: ["llm-task", "message"],
+      alsoAllow: ["llm-task", "message"],
     },
   },
 ];
@@ -240,10 +240,31 @@ function patchOpenClawJson() {
     );
   }
 
-  // CLI `config set agents.list` is unreliable across builds; write directly whenever we patch config.
+  // Always rewrite agents.list so profile/alsoAllow fixes take effect on every redeploy.
+  // Find and patch the main agent entry if it exists; otherwise set the full default list.
   if (!Array.isArray(merged.agents.list) || merged.agents.list.length === 0) {
     merged.agents.list = structuredClone(DEFAULT_AGENTS_LIST);
-    console.log("[bootstrap] Set agents.list (main: llm-task, message)");
+    console.log("[bootstrap] Set agents.list (main: profile=full, alsoAllow llm-task/message)");
+  } else {
+    const mainIdx = merged.agents.list.findIndex((a) => a.id === "main");
+    if (mainIdx !== -1) {
+      const entry = merged.agents.list[mainIdx];
+      // Fix: ensure profile=full and use alsoAllow (not allow) so all tools stay accessible.
+      const tools = entry.tools || {};
+      const wasAllow = Array.isArray(tools.allow);
+      tools.profile = "full";
+      tools.alsoAllow = Array.from(new Set([...(tools.alsoAllow || []), "llm-task", "message"]));
+      if (wasAllow) {
+        // allow acts as an intersection filter and overrides profile; remove it.
+        delete tools.allow;
+        console.log("[bootstrap] Removed agents.list[main].tools.allow (was restricting tools); using alsoAllow instead");
+      }
+      entry.tools = tools;
+      merged.agents.list[mainIdx] = entry;
+    } else {
+      merged.agents.list.push(...structuredClone(DEFAULT_AGENTS_LIST));
+      console.log("[bootstrap] Added main agent to agents.list (profile=full, alsoAllow llm-task/message)");
+    }
   }
 
   // tools.fs is not supported in OpenClaw 2026.2.12; remove if present (e.g. from prior bootstrap).
