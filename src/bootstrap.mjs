@@ -365,7 +365,7 @@ function installTradingRecipePluginIfNeeded() {
   ensureDir(path.join(STATE_DIR, "extensions"));
   const result = spawnSync(
     "openclaw",
-    ["plugins", "install", "@senpi/trading-recipe", "--pin"],
+    ["plugins", "install", "@senpi/trading-recipe"],
     {
       env: { ...process.env, OPENCLAW_STATE_DIR: STATE_DIR },
       stdio: "pipe",
