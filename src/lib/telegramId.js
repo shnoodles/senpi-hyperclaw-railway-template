@@ -22,20 +22,6 @@ export function readCachedTelegramId() {
 }
 
 /**
- * Read Telegram chat ID from USER.md (persisted from a previous successful resolution).
- * @returns {string} numeric ID or ""
- */
-export function readChatIdFromUserMd() {
-  try {
-    const userMd = fs.readFileSync(path.join(WORKSPACE_DIR, "USER.md"), "utf8");
-    const match = userMd.match(/^- Chat ID:\s*(\d+)/m);
-    return match ? match[1] : "";
-  } catch {
-    return "";
-  }
-}
-
-/**
  * Synchronously write a numeric Telegram user ID to the cache file.
  * @param {string} id
  */
