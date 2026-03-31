@@ -508,14 +508,15 @@ function installSenpiTradingRuntimeSkillIfNeeded() {
     return;
   }
 
-  // Build the source URL. The skills CLI resolves a GitHub tree URL to the correct
-  // branch + subdirectory: https://github.com/owner/repo/tree/<branch>/<skill-dir>
-  const skillUrl = `${SENPI_SKILLS_REPO}/tree/${SENPI_SKILLS_BRANCH}/${SENPI_TRADING_RUNTIME_SKILL_NAME}`;
+  // Use the owner/repo@branch shorthand so the skills CLI passes the full branch ref
+  // (e.g. "SAITA/dsl") directly to git. The GitHub tree URL format splits on "/" and
+  // would incorrectly treat only "SAITA" as the branch name.
+  const skillSource = `Senpi-ai/senpi-skills@${SENPI_SKILLS_BRANCH}`;
 
-  console.log(`[bootstrap] Installing ${SENPI_TRADING_RUNTIME_SKILL_NAME} skill from ${skillUrl} ...`);
+  console.log(`[bootstrap] Installing ${SENPI_TRADING_RUNTIME_SKILL_NAME} skill (${skillSource}) ...`);
   const result = spawnSync(
     "npx",
-    ["-y", "skills", "add", skillUrl, "--agent", "openclaw", "--yes"],
+    ["-y", "skills", "add", skillSource, "--skill", SENPI_TRADING_RUNTIME_SKILL_NAME, "--agent", "openclaw", "--yes"],
     {
       env: { ...process.env, OPENCLAW_STATE_DIR: STATE_DIR },
       stdio: "pipe",
