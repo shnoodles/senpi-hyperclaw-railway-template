@@ -59,6 +59,7 @@ SHARED_ANTHROPIC_KEY=$(jq -r '.shared.anthropic_api_key // ""' "$CONFIG_FILE")
 
 for i in $(seq 0 $(($AGENT_COUNT - 1))); do
   AGENT_NAME=$(jq -r ".agents[$i].name" "$CONFIG_FILE")
+  PROJECT_ID=$(jq -r ".agents[$i].project_id // \"\"" "$CONFIG_FILE")
   AI_PROVIDER=$(jq -r ".agents[$i].ai_provider" "$CONFIG_FILE")
   AI_API_KEY=$(jq -r ".agents[$i].ai_api_key // \"\"" "$CONFIG_FILE")
   MODEL=$(jq -r ".agents[$i].model // \"\"" "$CONFIG_FILE")
@@ -83,19 +84,30 @@ for i in $(seq 0 $(($AGENT_COUNT - 1))); do
   echo "   Model:    $MODEL"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  # 1. Create a new Railway project
-  echo "   📁 Creating Railway project..."
-  PROJECT_OUTPUT=$(railway init --name "$AGENT_NAME" --json 2>/dev/null || true)
-  PROJECT_ID=$(echo "$PROJECT_OUTPUT" | jq -r '.id // empty' 2>/dev/null || true)
+  # 1. Create or reuse Railway project
+  if [ -n "$PROJECT_ID" ]; then
+    echo "   📁 Using existing project: $PROJECT_ID"
+  else
+    echo "   📁 Creating Railway project..."
+    INIT_OUTPUT=$(railway init --name "$AGENT_NAME" 2>&1 || true)
+    
+    # Try to extract project ID from JSON output first
+    PROJECT_ID=$(echo "$INIT_OUTPUT" | jq -r '.id // empty' 2>/dev/null || true)
+    
+    # If no JSON, try to extract from URL in text output (e.g. https://railway.com/project/UUID)
+    if [ -z "$PROJECT_ID" ]; then
+      PROJECT_ID=$(echo "$INIT_OUTPUT" | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1 || true)
+    fi
 
-  if [ -z "$PROJECT_ID" ]; then
-    echo "   ⚠️  Could not parse project ID. Trying interactive mode..."
-    railway init --name "$AGENT_NAME"
-    echo "   Please run 'railway link' to select the project, then re-run this script."
-    continue
+    if [ -z "$PROJECT_ID" ]; then
+      echo "   ❌ Could not extract project ID. Output was:"
+      echo "   $INIT_OUTPUT"
+      echo "   Skipping this agent. Add project_id to fleet-config.json and re-run."
+      continue
+    fi
+
+    echo "   ✅ Project created: $PROJECT_ID"
   fi
-
-  echo "   ✅ Project created: $PROJECT_ID"
 
   # 2. Link to the project
   railway link --project "$PROJECT_ID" --environment production

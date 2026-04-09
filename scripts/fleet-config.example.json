@@ -6,6 +6,7 @@
   "agents": [
     {
       "name": "senpi-qwen35-9b",
+      "project_id": "",
       "ai_provider": "together",
       "model": "together/Qwen/Qwen3.5-9B",
       "senpi_auth_token": "SENPI_TOKEN_1_HERE",
@@ -14,6 +15,7 @@
     },
     {
       "name": "senpi-qwen35-27b",
+      "project_id": "",
       "ai_provider": "together",
       "model": "together/Qwen/Qwen3.5-27B",
       "senpi_auth_token": "SENPI_TOKEN_2_HERE",
@@ -22,6 +24,7 @@
     },
     {
       "name": "senpi-qwen35-35b-a3b",
+      "project_id": "",
       "ai_provider": "together",
       "model": "together/Qwen/Qwen3.5-35B-A3B",
       "senpi_auth_token": "SENPI_TOKEN_3_HERE",
