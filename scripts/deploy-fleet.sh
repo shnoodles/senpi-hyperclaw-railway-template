@@ -53,33 +53,28 @@ for i in $(seq 0 $(($AGENT_COUNT - 1))); do
   railway init --name "$AGENT_NAME"
   echo ""
 
-  # Step 2: Add GitHub repo as service (pipe empty input to skip variable prompt)
+  # Step 2: Add GitHub repo as service with env vars (skips variable prompt)
   echo "   📦 Adding service from GitHub..."
-  echo "" | railway add -s "$AGENT_NAME" -r "$REPO"
+  railway add -s "$AGENT_NAME" -r "$REPO" \
+    -v "AI_PROVIDER=$AI_PROVIDER" \
+    -v "AI_API_KEY=$AI_API_KEY" \
+    -v "AI_MODEL=$MODEL" \
+    -v "SENPI_AUTH_TOKEN=$SENPI_AUTH_TOKEN" \
+    -v "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" \
+    -v "SETUP_PASSWORD=$SETUP_PASSWORD" \
+    -v "OPENCLAW_STATE_DIR=/data/.openclaw" \
+    -v "OPENCLAW_WORKSPACE_DIR=/data/workspace" \
+    -v "SENPI_STATE_DIR=/data/.openclaw/senpi-state" \
+    ${TELEGRAM_USERID:+-v "TELEGRAM_USERID=$TELEGRAM_USERID"}
 
   # Step 3: Link to the new service
   railway service "$AGENT_NAME"
 
   # Step 4: Volume
   echo "   💾 Adding volume..."
-  railway volume add --mount-path "/data" 2>/dev/null || echo "   ⚠️  Volume: check dashboard if needed"
+  railway volume add --mount-path "/data" 2>/dev/null || echo "   ⚠️  Volume: add manually in dashboard (mount at /data)"
 
-  # Step 5: Set env vars
-  echo "   🔧 Setting env vars..."
-  railway variables \
-    --set "AI_PROVIDER=$AI_PROVIDER" \
-    --set "AI_API_KEY=$AI_API_KEY" \
-    --set "AI_MODEL=$MODEL" \
-    --set "SENPI_AUTH_TOKEN=$SENPI_AUTH_TOKEN" \
-    --set "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN" \
-    --set "SETUP_PASSWORD=$SETUP_PASSWORD" \
-    --set "OPENCLAW_STATE_DIR=/data/.openclaw" \
-    --set "OPENCLAW_WORKSPACE_DIR=/data/workspace" \
-    --set "SENPI_STATE_DIR=/data/.openclaw/senpi-state"
-
-  [ -n "$TELEGRAM_USERID" ] && railway variables --set "TELEGRAM_USERID=$TELEGRAM_USERID"
-
-  # Step 6: Domain
+  # Step 5: Domain
   echo "   🌐 Generating domain..."
   railway domain 2>/dev/null || echo "   ⚠️  Domain: enable public networking in dashboard"
 
