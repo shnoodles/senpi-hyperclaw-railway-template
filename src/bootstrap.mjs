@@ -299,6 +299,29 @@ function patchOpenClawJson() {
     );
   }
 
+  // Register Qwen3.5 models with Together provider so OpenClaw can resolve them
+  if (process.env.AI_PROVIDER?.trim()?.toLowerCase() === "together") {
+    merged.models = merged.models || {};
+    merged.models.mode = "merge";
+    merged.models.providers = merged.models.providers || {};
+    merged.models.providers.together = merged.models.providers.together || {
+      baseUrl: "https://api.together.xyz/v1",
+      apiKey: "${TOGETHER_API_KEY}",
+      api: "openai-completions",
+      models: [
+        { id: "Qwen/Qwen3.5-9B", name: "Qwen3.5 9B", reasoning: false, contextWindow: 262144, maxTokens: 32768 },
+        { id: "Qwen/Qwen3.5-27B", name: "Qwen3.5 27B", reasoning: false, contextWindow: 262144, maxTokens: 32768 },
+        { id: "Qwen/Qwen3.5-35B-A3B", name: "Qwen3.5 35B A3B", reasoning: false, contextWindow: 262144, maxTokens: 32768 },
+        { id: "Qwen/Qwen3.5-397B-A17B", name: "Qwen3.5 397B", reasoning: false, contextWindow: 256000, maxTokens: 32768 },
+        { id: "Qwen/Qwen3-235B-A22B-FP8", name: "Qwen3 235B", reasoning: false, contextWindow: 40000, maxTokens: 32768 },
+        { id: "moonshotai/Kimi-K2.5", name: "Kimi K2.5", reasoning: false, contextWindow: 262144, maxTokens: 32768 },
+        { id: "meta-llama/llama-3.3-70b-instruct-turbo", name: "Llama 3.3 70B", reasoning: false, contextWindow: 131072, maxTokens: 32768 },
+        { id: "deepseek/deepseek-r1", name: "DeepSeek R1", reasoning: true, contextWindow: 131072, maxTokens: 32768 },
+      ],
+    };
+    console.log("[bootstrap] Together AI provider configured with Qwen3.5 models");
+  }
+
   // Always rewrite agents.list so profile/alsoAllow fixes take effect on every redeploy.
   // Find and patch the main agent entry if it exists; otherwise set the full default list.
   if (!Array.isArray(merged.agents.list) || merged.agents.list.length === 0) {
