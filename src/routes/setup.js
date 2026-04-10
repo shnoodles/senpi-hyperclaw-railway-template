@@ -103,6 +103,12 @@ const AUTH_GROUPS = [
     ],
   },
   {
+    value: "deepseek",
+    label: "DeepSeek",
+    hint: "DeepSeek V3 / R1",
+    options: [{ value: "deepseek-api-key", label: "DeepSeek API key" }],
+  },
+  {
     value: "together",
     label: "Together AI",
     hint: "Qwen 3.5, Llama, DeepSeek + more",

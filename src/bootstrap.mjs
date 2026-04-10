@@ -310,6 +310,23 @@ function patchOpenClawJson() {
     );
   }
 
+  // Register DeepSeek models with native provider so OpenClaw can resolve them
+  if (process.env.AI_PROVIDER?.trim()?.toLowerCase() === "deepseek") {
+    merged.models = merged.models || {};
+    merged.models.mode = "merge";
+    merged.models.providers = merged.models.providers || {};
+    merged.models.providers.deepseek = merged.models.providers.deepseek || {
+      baseUrl: "https://api.deepseek.com/v1",
+      apiKey: "${DEEPSEEK_API_KEY}",
+      api: "openai-completions",
+      models: [
+        { id: "deepseek-chat", name: "DeepSeek V3", reasoning: false, contextWindow: 131072, maxTokens: 8192 },
+        { id: "deepseek-reasoner", name: "DeepSeek R1", reasoning: true, contextWindow: 131072, maxTokens: 8192 },
+      ],
+    };
+    console.log("[bootstrap] DeepSeek provider configured with V3 and R1 models");
+  }
+
   // Register Qwen3.5 models with Together provider so OpenClaw can resolve them
   if (process.env.AI_PROVIDER?.trim()?.toLowerCase() === "together") {
     merged.models = merged.models || {};

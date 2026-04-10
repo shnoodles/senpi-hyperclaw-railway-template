@@ -53,6 +53,7 @@ export const PROVIDER_TO_AUTH_CHOICE = {
   gemini: "gemini-api-key",
   google: "gemini-api-key",
   "ai-gateway": "ai-gateway-api-key",
+  deepseek: "deepseek-api-key",
   moonshot: "moonshot-api-key",
   "kimi-code": "kimi-code-api-key",
   zai: "zai-api-key",
@@ -71,6 +72,7 @@ export const PROVIDERS_WITHOUT_API_KEY = new Set([]);
  * After onboarding as "openai", the base URL is patched into openclaw.json.
  */
 export const PROVIDER_BASE_URL = {
+  deepseek: "https://api.deepseek.com/v1",
   together: "https://api.together.xyz/v1",
 };
 
@@ -87,6 +89,7 @@ const PROVIDER_API_KEY_ENV = {
   xai: "XAI_API_KEY",
   mistral: "MISTRAL_API_KEY",
   groq: "GROQ_API_KEY",
+  deepseek: "DEEPSEEK_API_KEY",
   together: "TOGETHER_API_KEY",
   zai: "ZAI_API_KEY",
   moonshot: "MOONSHOT_API_KEY",

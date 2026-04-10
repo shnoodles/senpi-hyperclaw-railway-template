@@ -76,6 +76,10 @@ export const DESIRED_MODELS = {
   "together/meta-llama/llama-3.3-70b-instruct-turbo": { alias: "Llama 3.3 70B (Together)" },
   "together/deepseek/deepseek-r1": { alias: "DeepSeek R1 (Together)" },
 
+  // ── DeepSeek (native API) ──
+  "deepseek/deepseek-chat": { alias: "DeepSeek V3" },
+  "deepseek/deepseek-reasoner": { alias: "DeepSeek R1" },
+
   // ── Z.AI / GLM ──
   "zai/glm-5": { alias: "GLM-5" },
   "zai/glm-4.7": { alias: "GLM-4.7" },
@@ -168,6 +172,7 @@ export const PROVIDER_DEFAULTS = [
   { key: "XAI_API_KEY", model: "xai/grok-3" },
   { key: "MISTRAL_API_KEY", model: "mistral/mistral-large-latest" },
   { key: "GROQ_API_KEY", model: "groq/llama-3.3-70b" },
+  { key: "DEEPSEEK_API_KEY", model: "deepseek/deepseek-chat" },
   { key: "TOGETHER_API_KEY", model: "together/Qwen/Qwen3.5-27B" },
   { key: "ZAI_API_KEY", model: "zai/glm-5" },
   { key: "MOONSHOT_API_KEY", model: "moonshot/kimi-k2.5" },
@@ -185,6 +190,7 @@ export const AI_PROVIDER_MODEL_MAP = {
   gemini: "google/gemini-3.1-pro-preview",
   google: "google/gemini-3.1-pro-preview",
   openrouter: "openrouter/anthropic/claude-sonnet-4-5",
+  deepseek: "deepseek/deepseek-chat",
   moonshot: "moonshot/kimi-k2.5",
   zai: "zai/glm-5",
   venice: "venice/llama-3.3-70b",
