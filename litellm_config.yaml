@@ -1,0 +1,33 @@
+# LiteLLM Proxy Configuration for Vertex AI Qwen 3.5
+# This config routes OpenAI-compatible requests to your Vertex AI Model Garden endpoint
+#
+# INSTRUCTIONS:
+#   1. Replace YOUR_GCP_PROJECT_ID with your actual Google Cloud project ID
+#   2. Replace REGION with the region where your model is deployed (e.g., us-central1, europe-west4)
+#   3. The GOOGLE_APPLICATION_CREDENTIALS env var must point to your service account JSON
+
+model_list:
+  # Primary model: Qwen 3.5 35B on Vertex AI Model Garden (MaaS endpoint, no dedicated DNS)
+  - model_name: qwen3_5-35b
+    litellm_params:
+      model: vertex_ai/qwen/qwen3_5-35b-a3b
+      vertex_project: YOUR_GCP_PROJECT_ID
+      vertex_location: REGION
+
+  # Alias so OpenClaw can reference it with a simple name
+  - model_name: qwen
+    litellm_params:
+      model: vertex_ai/qwen/qwen3_5-35b-a3b
+      vertex_project: YOUR_GCP_PROJECT_ID
+      vertex_location: REGION
+
+general_settings:
+  # Master key for authenticating requests to the LiteLLM proxy
+  # This will be set via LITELLM_MASTER_KEY env var at runtime
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+litellm_settings:
+  # Drop unsupported params instead of erroring
+  drop_params: true
+  # Set reasonable defaults
+  request_timeout: 120
