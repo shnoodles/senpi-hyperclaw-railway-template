@@ -36,27 +36,30 @@ RUN set -eux; \
     sed -i -E 's/"openclaw"[[:space:]]*:[[:space:]]*"workspace:[^"]+"/"openclaw": "*"/g' "$f"; \
   done
 
-# Disable minimumReleaseAge so freshly-published transitive deps don't block the build.
-# Nuclear approach: patch .npmrc, package.json, and set env var to cover all config sources.
+# Disable minimumReleaseAge completely.
+# Set the env var BEFORE the RUN so it's available to the entire pnpm process tree.
+ENV npm_config_minimum_release_age=0
 RUN set -eux; \
-    # 1. Rewrite .npmrc: remove any existing minimum-release-age line, then add =0
-    sed -i '/minimum-release-age/d' .npmrc 2>/dev/null || true; \
-    echo 'minimum-release-age=0' >> .npmrc; \
-    # 2. Patch package.json to remove pnpm.minimumReleaseAge if present (camelCase or kebab)
+    # Remove all minimum-release-age settings from every .npmrc in the tree
+    find . -name '.npmrc' -type f -exec sed -i '/minimum.release.age/Id' {} \; ; \
+    # Remove from package.json pnpm config
     node -e " \
-      const fs = require('fs'); \
-      const p = JSON.parse(fs.readFileSync('package.json','utf8')); \
-      if (p.pnpm) { \
-        delete p.pnpm.minimumReleaseAge; \
-        delete p.pnpm['minimum-release-age']; \
-      } \
-      fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n'); \
+      const fs=require('fs'); \
+      const p=JSON.parse(fs.readFileSync('package.json','utf8')); \
+      if(p.pnpm){delete p.pnpm.minimumReleaseAge;delete p.pnpm['minimum-release-age'];} \
+      fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n'); \
     " 2>/dev/null || true; \
-    # 3. Also patch any nested .npmrc files in extensions/
-    find . -name '.npmrc' -type f -exec sed -i '/minimum-release-age/d' {} \; ; \
-    find . -name '.npmrc' -type f -exec sh -c 'echo "minimum-release-age=0" >> "$1"' _ {} \; ; \
-    # 4. Set env var as final fallback
-    export npm_config_minimum_release_age=0; \
+    # Ensure .npmrc has the override
+    echo 'minimum-release-age=0' >> .npmrc; \
+    # Also add pnpm-specific overrides to force-resolve follow-redirects
+    node -e " \
+      const fs=require('fs'); \
+      const p=JSON.parse(fs.readFileSync('package.json','utf8')); \
+      p.pnpm=p.pnpm||{}; \
+      p.pnpm.overrides=p.pnpm.overrides||{}; \
+      p.pnpm.overrides['follow-redirects']='>=1.15.0'; \
+      fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n'); \
+    " 2>/dev/null || true; \
     pnpm install --no-frozen-lockfile
 RUN pnpm build
 ENV OPENCLAW_PREFER_PNPM=1
