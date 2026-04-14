@@ -24,6 +24,15 @@ if [ -z "$VERTEX_API_KEY" ]; then
   echo "    Set this env var to the PROXY_API_KEY configured on the proxy service."
 fi
 
+# Vercel AI Gateway support
+export VERCEL_AI_GATEWAY_URL="${VERCEL_AI_GATEWAY_URL:-https://api.vercel.ai/v1}"
+echo "[✓] Vercel AI Gateway URL: $VERCEL_AI_GATEWAY_URL"
+if [ -n "$VERCEL_API_KEY" ]; then
+  echo "[✓] Vercel API key is set"
+else
+  echo "[!] VERCEL_API_KEY is not set (Vercel AI Gateway routes will not work without it)"
+fi
+
 # ---------------------------------------------------------------------------
 # 3. Set LiteLLM master key (used by OpenClaw to authenticate to the proxy)
 # ---------------------------------------------------------------------------

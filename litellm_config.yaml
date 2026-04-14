@@ -28,6 +28,19 @@ model_list:
       api_base: os.environ/VERTEX_PROXY_URL
       api_key: os.environ/VERTEX_API_KEY
 
+  # ── Vercel AI Gateway (routes to Google Gemma 4 31B IT via Vercel) ──
+  - model_name: vercel/google/gemma-4-31b-it
+    litellm_params:
+      model: openai/google/gemma-4-31b-it
+      api_base: os.environ/VERCEL_AI_GATEWAY_URL
+      api_key: os.environ/VERCEL_API_KEY
+
+  - model_name: vercel-ai-gateway/google/gemma-4-31b-it
+    litellm_params:
+      model: openai/google/gemma-4-31b-it
+      api_base: os.environ/VERCEL_AI_GATEWAY_URL
+      api_key: os.environ/VERCEL_API_KEY
+
 general_settings:
   # Master key for authenticating requests to the LiteLLM proxy
   # This will be set via LITELLM_MASTER_KEY env var at runtime

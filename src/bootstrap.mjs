@@ -132,13 +132,14 @@ function patchOpenClawJson() {
   const existingPluginAllow = Array.isArray(cfg.plugins?.allow)
     ? cfg.plugins.allow.map((id) => String(id).trim()).filter(Boolean)
     : [];
-  const bootstrapPluginAllow =
-    process.env.SENPI_TRADING_RUNTIME_ENABLED !== "false"
+  const forceRuntime = process.env.SENPI_FORCE_RUNTIME_INSTALL === "true";
+  const runtimeEnabled = forceRuntime || process.env.SENPI_TRADING_RUNTIME_ENABLED !== "false";
+  const bootstrapPluginAllow = runtimeEnabled
       ? ["telegram", "llm-task", SENPI_RUNTIME_PLUGIN_ID]
       : ["telegram"];
   let pluginsAllow = [...new Set([...existingPluginAllow, ...bootstrapPluginAllow])];
-  // Do not keep Senpi runtime plugin in allow when disabled.
-  if (process.env.SENPI_TRADING_RUNTIME_ENABLED === "false") {
+  // Do not keep Senpi runtime plugin in allow when disabled (unless force install is on).
+  if (!runtimeEnabled) {
     pluginsAllow = pluginsAllow.filter((id) => id !== SENPI_RUNTIME_PLUGIN_ID);
   }
 
@@ -241,8 +242,8 @@ function patchOpenClawJson() {
       allow: pluginsAllow,
       entries: (() => {
         const entries = { telegram: { enabled: true } };
-        // Only add Senpi runtime if enabled (set SENPI_TRADING_RUNTIME_ENABLED=false when plugin is not installed)
-        if (process.env.SENPI_TRADING_RUNTIME_ENABLED !== "false") {
+        // Only add Senpi runtime if enabled or force install is on
+        if (runtimeEnabled) {
           entries["llm-task"] = { enabled: true };
           entries[SENPI_RUNTIME_PLUGIN_ID] = {
             enabled: true,
@@ -279,8 +280,8 @@ function patchOpenClawJson() {
     if (!paths.includes(stateExt)) merged.plugins.load.paths = [...paths, stateExt];
   }
 
-  // If Senpi runtime is disabled, remove entries so config stays valid when plugin is not installed
-  if (process.env.SENPI_TRADING_RUNTIME_ENABLED === "false" && merged.plugins?.entries) {
+  // If Senpi runtime is disabled (and not force-installed), remove entries so config stays valid when plugin is not installed
+  if (!runtimeEnabled && merged.plugins?.entries) {
     delete merged.plugins.entries[SENPI_RUNTIME_PLUGIN_ID];
   }
 
@@ -362,6 +363,23 @@ function patchOpenClawJson() {
     console.log("[bootstrap] Together AI provider configured with Qwen3.5 models");
   }
 
+  // Register Gemma models with Vercel AI Gateway (OpenAI-compatible)
+  if (process.env.AI_PROVIDER?.trim()?.toLowerCase() === "vercel-ai-gateway") {
+    const gatewayUrl = process.env.VERCEL_AI_GATEWAY_URL || "https://api.vercel.ai/v1";
+    merged.models = merged.models || {};
+    merged.models.mode = "merge";
+    merged.models.providers = merged.models.providers || {};
+    merged.models.providers["vercel-ai-gateway"] = merged.models.providers["vercel-ai-gateway"] || {
+      baseUrl: gatewayUrl,
+      apiKey: "${VERCEL_API_KEY}",
+      api: "openai-completions",
+      models: [
+        { id: "google/gemma-4-31b-it", name: "Gemma 4 31B IT (Vercel)", reasoning: false, contextWindow: 131072, maxTokens: 8192, compat: { supportsTools: true } },
+      ],
+    };
+    console.log(`[bootstrap] Vercel AI Gateway provider configured at ${gatewayUrl}`);
+  }
+
   // Register Gemma models with Vertex proxy (OpenAI-compatible via Railway proxy)
   if (process.env.AI_PROVIDER?.trim()?.toLowerCase() === "vertex") {
     const proxyUrl = process.env.VERTEX_PROXY_URL || "https://vertex-openai-proxy-production.up.railway.app/v1";
@@ -411,7 +429,7 @@ function patchOpenClawJson() {
     delete merged.tools.fs;
   }
   fs.writeFileSync(cfgPath, JSON.stringify(merged, null, 2));
-  if (process.env.SENPI_TRADING_RUNTIME_ENABLED !== "false") {
+  if (runtimeEnabled) {
     console.log(
       "[bootstrap] Senpi runtime plugin configured (stateDir:",
       path.join(STATE_DIR, "senpi-state"),
@@ -520,7 +538,8 @@ function ensureSenpiStateFile() {
  * but not yet installed. Ensures plugins.installs and state dir are correct for updates.
  */
 function installSenpiRuntimePluginIfNeeded() {
-  if (process.env.SENPI_TRADING_RUNTIME_ENABLED === "false") return;
+  const forceInstall = process.env.SENPI_FORCE_RUNTIME_INSTALL === "true";
+  if (!forceInstall && process.env.SENPI_TRADING_RUNTIME_ENABLED === "false") return;
   const cfgPath = path.join(STATE_DIR, "openclaw.json");
   if (!exists(cfgPath)) return;
 
@@ -541,7 +560,10 @@ function installSenpiRuntimePluginIfNeeded() {
   }
 
   const pluginDir = path.join(STATE_DIR, "extensions", "@senpi-ai", "runtime");
-  if (exists(pluginDir)) return;
+  if (!forceInstall && exists(pluginDir)) return;
+  if (forceInstall) {
+    console.log("[bootstrap] SENPI_FORCE_RUNTIME_INSTALL=true — forcing Senpi runtime plugin install");
+  }
 
   ensureDir(path.join(STATE_DIR, "extensions"));
   const result = spawnSync(
@@ -576,7 +598,8 @@ function installSenpiRuntimePluginIfNeeded() {
  * Non-fatal: a failure is logged but does not prevent the gateway from starting.
  */
 function installSenpiTradingRuntimeSkillIfNeeded() {
-  if (process.env.SENPI_TRADING_RUNTIME_ENABLED === "false") return;
+  const forceInstall = process.env.SENPI_FORCE_RUNTIME_INSTALL === "true";
+  if (!forceInstall && process.env.SENPI_TRADING_RUNTIME_ENABLED === "false") return;
   const cfgPath = path.join(STATE_DIR, "openclaw.json");
   if (!exists(cfgPath)) return;
 

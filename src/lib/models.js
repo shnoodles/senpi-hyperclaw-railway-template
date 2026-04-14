@@ -38,6 +38,9 @@ export const DESIRED_MODELS = {
   "google/gemma-4-26b-a4b-it": { alias: "Gemma 4 26B MoE" },
   "google/gemma-4-e4b-it": { alias: "Gemma 4 E4B" },
 
+  // ── Vercel AI Gateway (Google) ──
+  "vercel-ai-gateway/google/gemma-4-31b-it": { alias: "Gemma 4 31B (Vercel)" },
+
   // ── Google Gemini ──
   "google/gemini-3.1-pro-preview": { alias: "Gemini 3.1 Pro" },
   "google/gemini-3-flash-preview": { alias: "Gemini 3 Flash" },
@@ -204,4 +207,5 @@ export const AI_PROVIDER_MODEL_MAP = {
   minimax: "minimax/MiniMax-M2.1",
   together: "together/Qwen/Qwen3.5-27B",
   vertex: "vertex/gemma-4-31b-it",
+  "vercel-ai-gateway": "vercel-ai-gateway/google/gemma-4-31b-it",
 };

@@ -63,6 +63,7 @@ export const PROVIDER_TO_AUTH_CHOICE = {
   synthetic: "synthetic-api-key",
   "opencode-zen": "opencode-zen",
   vertex: "openai-api-key",
+  "vercel-ai-gateway": "openai-api-key",
 };
 
 /** Providers that use ADC/OAuth instead of an API key (AI_API_KEY not required). */
@@ -76,6 +77,7 @@ export const PROVIDER_BASE_URL = {
   deepseek: "https://api.deepseek.com/v1",
   together: "https://api.together.xyz/v1",
   vertex: process.env.VERTEX_PROXY_URL || "https://vertex-openai-proxy-production.up.railway.app/v1",
+  "vercel-ai-gateway": process.env.VERCEL_AI_GATEWAY_URL || "https://api.vercel.ai/v1",
 };
 
 /**
@@ -100,6 +102,7 @@ const PROVIDER_API_KEY_ENV = {
   synthetic: "SYNTHETIC_API_KEY",
   "opencode-zen": "OPENCODE_API_KEY",
   vertex: "VERTEX_API_KEY",
+  "vercel-ai-gateway": "VERCEL_API_KEY",
 };
 
 /**
