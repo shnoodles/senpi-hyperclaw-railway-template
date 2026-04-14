@@ -23,8 +23,6 @@ import {
   startAutoApprovalLoop,
   stopAutoApprovalLoop,
 } from "./lib/deviceAuth.js";
-import { startVertexAuthRefresh } from "./lib/vertexAuth.js";
-import { startVertexProxy } from "./lib/vertexProxy.js";
 
 const MCPORTER_CONFIG = path.join(STATE_DIR, "config", "mcporter.json");
 
@@ -164,21 +162,6 @@ export async function startGateway(gatewayToken) {
 
   clearStaleSessionLocks();
   clearAllSessions();
-
-  // Start Vertex AI token refresh (if GCP credentials are configured)
-  await startVertexAuthRefresh();
-
-  // Start local Vertex AI proxy (translates OpenAI format for Vertex AI)
-  if (process.env.AI_PROVIDER?.trim()?.toLowerCase() === "vertex") {
-    try {
-      const proxyUrl = await startVertexProxy();
-      // Set env var so bootstrap.mjs picks up the local proxy URL
-      process.env.VERTEX_PROXY_URL = proxyUrl;
-      console.log(`[gateway] Vertex AI proxy started at ${proxyUrl}`);
-    } catch (err) {
-      console.error(`[gateway] Vertex AI proxy failed to start: ${err.message}`);
-    }
-  }
 
   console.log(`[gateway] ========== GATEWAY START TOKEN SYNC ==========`);
   console.log(
