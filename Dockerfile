@@ -36,19 +36,15 @@ RUN set -eux; \
     sed -i -E 's/"openclaw"[[:space:]]*:[[:space:]]*"workspace:[^"]+"/"openclaw": "*"/g' "$f"; \
   done
 
-# Disable minimumReleaseAge — pnpm v10 reads this from pnpm-workspace.yaml, not .npmrc.
+# Disable minimumReleaseAge — remove the line entirely from pnpm-workspace.yaml.
 RUN set -eux; \
-    # Patch pnpm-workspace.yaml: remove minimumReleaseAge or set to 0
     node -e " \
       const fs=require('fs'); \
       let yaml=fs.readFileSync('pnpm-workspace.yaml','utf8'); \
-      yaml=yaml.replace(/^\s*minimumReleaseAge\s*:.*/gm,'minimumReleaseAge: 0 seconds'); \
+      yaml=yaml.split('\n').filter(l => !/minimumReleaseAge/i.test(l)).join('\n'); \
       fs.writeFileSync('pnpm-workspace.yaml',yaml); \
-      console.log('Patched pnpm-workspace.yaml'); \
+      console.log('Removed minimumReleaseAge from pnpm-workspace.yaml'); \
     "; \
-    # Also patch .npmrc as fallback
-    sed -i '/minimum.release.age/Id' .npmrc 2>/dev/null || true; \
-    echo 'minimum-release-age=0' >> .npmrc; \
     pnpm install --no-frozen-lockfile
 RUN pnpm build
 ENV OPENCLAW_PREFER_PNPM=1
