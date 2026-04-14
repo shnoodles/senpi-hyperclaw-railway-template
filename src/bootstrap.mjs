@@ -171,6 +171,11 @@ function patchOpenClawJson() {
         // Headless deployment: no device to pair; internal clients (Telegram provider, cron, session WS)
         // must connect with token only. Prevents [ws] code=1008 reason=connect failed / "pairing required".
         dangerouslyDisableDeviceAuth: true,
+        // Allow external Control UI / WebSocket connections from any origin.
+        // Override via GATEWAY_ALLOWED_ORIGINS env var (JSON array), e.g. '["https://example.com"]'
+        allowedOrigins: process.env.GATEWAY_ALLOWED_ORIGINS
+          ? JSON.parse(process.env.GATEWAY_ALLOWED_ORIGINS)
+          : ["*"],
       },
       // Trust loopback so reverse-proxy and internal clients (e.g. Telegram provider) are accepted
       trustedProxies: ["127.0.0.1", "::1"],
