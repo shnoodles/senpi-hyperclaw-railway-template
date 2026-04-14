@@ -14,6 +14,13 @@ model_list:
       api_base: os.environ/VERTEX_PROXY_URL
       api_key: os.environ/VERTEX_API_KEY
 
+  # OpenClaw sends the provider-prefixed name (vertex/gemma-4-31b-it)
+  - model_name: vertex/gemma-4-31b-it
+    litellm_params:
+      model: openai/gemma-4-31b-it
+      api_base: os.environ/VERTEX_PROXY_URL
+      api_key: os.environ/VERTEX_API_KEY
+
   # Alias so OpenClaw can reference it with a simple name
   - model_name: gemma
     litellm_params:
