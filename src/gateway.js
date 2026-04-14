@@ -234,7 +234,9 @@ export async function startGateway(gatewayToken) {
   );
   // Allow external WebSocket origins (Control UI, test runners, etc.)
   // Use --strict-json for array values (OpenClaw CLI requirement for non-scalar JSON).
-  const allowedOrigins = process.env.GATEWAY_ALLOWED_ORIGINS || '["*"]';
+  // Handle bare "*" string or proper JSON array from env var
+  const rawOrigins = process.env.GATEWAY_ALLOWED_ORIGINS?.trim() || "";
+  const allowedOrigins = rawOrigins.startsWith("[") ? rawOrigins : JSON.stringify(rawOrigins ? [rawOrigins] : ["*"]);
   await runCmd(
     OPENCLAW_NODE,
     clawArgs([

@@ -173,9 +173,16 @@ function patchOpenClawJson() {
         dangerouslyDisableDeviceAuth: true,
         // Allow external Control UI / WebSocket connections from any origin.
         // Override via GATEWAY_ALLOWED_ORIGINS env var (JSON array), e.g. '["https://example.com"]'
-        allowedOrigins: process.env.GATEWAY_ALLOWED_ORIGINS
-          ? JSON.parse(process.env.GATEWAY_ALLOWED_ORIGINS)
-          : ["*"],
+        // Handles bare "*" string, JSON array '["*"]', or defaults to ["*"]
+        allowedOrigins: (() => {
+          const raw = process.env.GATEWAY_ALLOWED_ORIGINS?.trim();
+          if (!raw) return ["*"];
+          if (raw.startsWith("[")) {
+            try { return JSON.parse(raw); } catch { return ["*"]; }
+          }
+          // Bare string like "*" or "https://example.com" → wrap in array
+          return [raw];
+        })(),
       },
       // Trust loopback so reverse-proxy and internal clients (e.g. Telegram provider) are accepted
       trustedProxies: ["127.0.0.1", "::1"],
@@ -539,7 +546,7 @@ function installSenpiRuntimePluginIfNeeded() {
   ensureDir(path.join(STATE_DIR, "extensions"));
   const result = spawnSync(
     "openclaw",
-    ["plugins", "install", SENPI_RUNTIME_NPM_SPEC],
+    ["plugins", "install", SENPI_RUNTIME_NPM_SPEC, "--dangerously-force-unsafe-install"],
     {
       env: { ...process.env, OPENCLAW_STATE_DIR: STATE_DIR },
       stdio: "pipe",
