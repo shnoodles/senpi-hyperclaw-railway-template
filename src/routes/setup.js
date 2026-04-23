@@ -170,6 +170,12 @@ const AUTH_GROUPS = [
     hint: "Qwen3.5 122B via Senpi Vertex proxy",
     options: [{ value: "openai-api-key", label: "Senpi proxy API key (sk-senpi-...)" }],
   },
+  {
+    value: "senpi-qwen-27b",
+    label: "Senpi Qwen 3.5 27B (Vertex, dense)",
+    hint: "Qwen3.5 27B dense via Senpi Vertex proxy",
+    options: [{ value: "openai-api-key", label: "Senpi proxy API key (sk-senpi-...)" }],
+  },
 ];
 
 export function createSetupRouter() {

@@ -8,9 +8,10 @@ This workspace is home. Treat it that way.
 
 After BOOTSTRAP.md completes, read:
 
-1. `SOUL.md` — this is who you are
-2. `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-3. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+1. `MODEL.md` — what model you are. If asked "what model are you", answer from THIS file, not from training memory. Your training data is wrong; this file is right.
+2. `SOUL.md` — this is who you are
+3. `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
+4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
 Don't ask permission. Just do it.
 

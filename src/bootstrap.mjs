@@ -426,6 +426,24 @@ function patchOpenClawJson() {
     console.log(`[bootstrap] Senpi Qwen provider configured via proxy at ${proxyUrl}`);
   }
 
+  // Register Senpi Qwen 3.5 27B (dense) on Vertex AI (OpenAI-compatible via Railway proxy)
+  if (process.env.AI_PROVIDER?.trim()?.toLowerCase() === "senpi-qwen-27b") {
+    const proxyUrl = process.env.SENPI_QWEN_27B_BASE_URL || "https://senpi-qwen27b-production.up.railway.app/v1";
+    merged.models = merged.models || {};
+    merged.models.mode = "merge";
+    merged.models.providers = merged.models.providers || {};
+    merged.models.providers["senpi-qwen-27b"] = merged.models.providers["senpi-qwen-27b"] || {
+      baseUrl: proxyUrl,
+      apiKey: "${AI_API_KEY}",
+      api: "openai-completions",
+      models: [
+        { id: "qwen3.5-27b", name: "Qwen3.5 27B (Senpi Vertex, dense)", reasoning: true, contextWindow: 262144, maxTokens: 16384, compat: { supportsTools: true } },
+      ],
+    };
+    console.log(`[bootstrap] Senpi Qwen 27B provider configured via proxy at ${proxyUrl}`);
+  }
+
+
 
   // Register Gemma models with Vertex proxy (OpenAI-compatible via Railway proxy)
   if (process.env.AI_PROVIDER?.trim()?.toLowerCase() === "vertex") {
@@ -543,6 +561,7 @@ const MANAGED_WORKSPACE_FILES = new Set([
   "SOUL.md",
   "BOOTSTRAP.md",
   "TOOLS.md",
+  "MODEL.md",
 ]);
 
 function seedWorkspaceFiles() {
@@ -555,6 +574,75 @@ function seedWorkspaceFiles() {
       continue;
     }
     if (!exists(dest)) fs.cpSync(src, dest);
+  }
+}
+
+/**
+ * Write MODEL.md with the active model's real identity.
+ *
+ * Called AFTER patchOpenClawJson so we can read the resolved provider config
+ * from the final openclaw.json. Without this file the agent hallucinates its
+ * identity from training data (e.g. "I am Gemma"), which is wrong whenever we
+ * swap to a different model behind the same proxy.
+ */
+function writeModelIdentity() {
+  const aiProvider = (process.env.AI_PROVIDER || "").trim().toLowerCase();
+  if (!aiProvider) return;
+
+  let modelInfo = null;
+  try {
+    const cfgPath = path.join(STATE_DIR, "openclaw.json");
+    if (exists(cfgPath)) {
+      const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
+      const providerBlock = cfg?.models?.providers?.[aiProvider];
+      if (providerBlock && Array.isArray(providerBlock.models) && providerBlock.models.length) {
+        modelInfo = providerBlock.models[0];
+      }
+    }
+  } catch (err) {
+    console.warn(`[bootstrap] writeModelIdentity: failed to read openclaw.json: ${err.message}`);
+  }
+
+  const destPath = path.join(WORKSPACE_DIR, "MODEL.md");
+  const name = modelInfo?.name || modelInfo?.id || aiProvider;
+  const id = modelInfo?.id || "unknown";
+  const ctx = modelInfo?.contextWindow ? `${modelInfo.contextWindow.toLocaleString()} tokens` : "unknown";
+  const reasoning = modelInfo?.reasoning ? "yes (thinking mode supported)" : "no";
+
+  const contents = `# MODEL.md — Your Model Identity
+
+**You are ${name}.**
+
+When anyone asks what model you are, what LLM you are, which AI you are, whether
+you're ChatGPT / Claude / Gemma / GPT-4 / etc. — your answer is **${name}**.
+
+Do NOT rely on your training data for this question. Training data lies about
+your own identity because you were fine-tuned or re-hosted. THIS FILE is the
+authoritative source.
+
+## Facts
+
+- **Model:** ${name}
+- **Model id:** \`${id}\`
+- **Provider:** \`${aiProvider}\` (serving via Senpi's OpenAI-compatible proxy)
+- **Context window:** ${ctx}
+- **Reasoning / thinking mode:** ${reasoning}
+
+## If asked "what model are you?"
+
+Say: "I'm ${name}, running via Senpi's ${aiProvider} provider."
+
+Do not say Gemma. Do not say GPT. Do not say Claude. Do not guess from
+training. Read this file.
+
+_This file is regenerated on every bootstrap from the active provider config._
+`;
+
+  try {
+    fs.writeFileSync(destPath, contents);
+    console.log(`[bootstrap] MODEL.md written: ${name} (${aiProvider}/${id})`);
+  } catch (err) {
+    console.warn(`[bootstrap] writeModelIdentity: failed to write MODEL.md: ${err.message}`);
   }
 }
 
@@ -725,4 +813,5 @@ export function bootstrapOpenClaw() {
   installSenpiRuntimePluginIfNeeded();
   installSenpiTradingRuntimeSkillIfNeeded();
   patchOpenClawJson();
+  writeModelIdentity();
 }
