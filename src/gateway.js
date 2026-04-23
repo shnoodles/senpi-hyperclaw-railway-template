@@ -278,7 +278,7 @@ export async function startGateway(gatewayToken) {
   // OpenClaw → gemmaToolParser (localhost:7299) → upstream vertex proxy → Vertex AI
   // Only start once — subsequent gateway restarts reuse the existing proxy.
   const providerLc = process.env.AI_PROVIDER?.trim()?.toLowerCase() || "";
-  const needsGemmaParser = ["vertex", "vercel-ai-gateway", "ai-gateway"].includes(providerLc);
+  const needsGemmaParser = ["vertex", "vercel-ai-gateway", "ai-gateway", "senpi-gemma-4"].includes(providerLc);
   if (needsGemmaParser && !gemmaToolParserUrl) {
     const upstreamUrl = PROVIDER_BASE_URL[providerLc]
       || process.env.VERCEL_AI_GATEWAY_URL
@@ -303,7 +303,7 @@ export async function startGateway(gatewayToken) {
       const cfg = JSON.parse(cfgRaw);
       const providers = cfg?.models?.providers || {};
       let patched = 0;
-      for (const provider of ["vertex", "vercel-ai-gateway", "ai-gateway"]) {
+      for (const provider of ["vertex", "vercel-ai-gateway", "ai-gateway", "senpi-gemma-4"]) {
         if (providers[provider]) {
           providers[provider].baseUrl = gemmaToolParserUrl;
           patched++;
@@ -320,7 +320,7 @@ export async function startGateway(gatewayToken) {
     } catch (err) {
       console.error(`[gateway] Failed to patch provider baseUrl: ${err.message}`);
       // Fallback to openclaw config set
-      for (const provider of ["vertex", "vercel-ai-gateway", "ai-gateway"]) {
+      for (const provider of ["vertex", "vercel-ai-gateway", "ai-gateway", "senpi-gemma-4"]) {
         await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "--json", `models.providers.${provider}.baseUrl`, `"${gemmaToolParserUrl}"`]));
       }
     }
